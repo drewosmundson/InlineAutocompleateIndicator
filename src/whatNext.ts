@@ -1,6 +1,64 @@
 
 
+import * as vscode from 'vscode';
+import * as http from 'http';
+import * as https from 'https';
+import { URL } from 'url';
+import { Transform, TransformCallback } from 'stream';
+import { pipeline } from 'stream';
+import { StringDecoder } from 'string_decoder';
 
+interface Settings {
+  ollamaUrl: string;
+  proxyPort: number;
+  model: string;
+}
+
+type Outcome = 'completed' | 'empty' | 'failed' | 'cancelled';
+
+interface RequestMetrics {
+  id: number;
+  startedAt: number;
+  firstByteAt?: number;
+  firstTokenAt?: number;
+  generatedChars: number;
+  generatedTokens?: number;
+  promptTokens?: number;
+  doneSeen: boolean;
+  httpStatus?: number;
+  error?: string;
+  endpoint: string;
+}
+
+const DEFAULT_OLLAMA_URL = 'http://127.0.0.1:11434';
+const DEFAULT_PROXY_PORT = 11435;
+const DEFAULT_MODEL = 'qwen2.5-coder:1.5b-base';
+const SPINNER_FRAMES = 4;
+const SPINNER_INTERVAL_MS = 180;
+
+let server: http.Server | undefined;
+let active = new Map<number, RequestMetrics>();
+let nextRequestId = 1;
+let animationTimer: ReturnType<typeof setInterval> | undefined;
+let animationFrame = 0;
+let decorations: vscode.TextEditorDecorationType[] = [];
+let status: vscode.StatusBarItem | undefined;
+let output: vscode.OutputChannel;
+let recentSummary = 'No autocomplete requests recorded';
+
+function getSettings(): Settings {
+  const config = vscode.workspace.getConfiguration('continueQwenIndicator');
+  return {
+    ollamaUrl: config.get<string>('ollamaUrl', DEFAULT_OLLAMA_URL),
+    proxyPort: config.get<number>('proxyPort', DEFAULT_PROXY_PORT),
+    model: config.get<string>('model', DEFAULT_MODEL),
+  };
+}
+
+function log(message: string): void {
+  const line = `[${new Date().toLocaleTimeString()}] ${message}`;
+  output.appendLine(line);
+}
 
 
 

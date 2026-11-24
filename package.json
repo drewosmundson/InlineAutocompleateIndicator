@@ -1,51 +1,28 @@
-
 {
-  "name": "continue-qwen-indicator",
-  "displayName": "Continue Qwen Activity Indicator",
-  "description": "Shows when Continue sends autocomplete requests to a local Ollama Qwen model.",
-  "version": "0.1.0",
+  "name": "qwen-autocomplete-monitor",
+  "displayName": "Qwen Autocomplete Monitor",
+  "description": "Monitor Continue autocomplete requests routed through a local Ollama reverse proxy, including first-token latency and empty responses.",
+  "version": "1.1.0",
   "publisher": "local-tools",
-  "engines": {
-    "vscode": "^1.85.0"
-  },
-
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-    "repository": {
-    "type": "git",
-    "url": "https://github.com/drewosmundson/InlineAutocompleateIndicator"
-    },
-    
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
   "main": "./out/extension.js",
+  "activationEvents": ["onStartupFinished"],
   "contributes": {
-    "commands": [
-      {
-        "command": "continueQwenIndicator.showStatus",
-        "title": "Qwen Indicator: Show Status"
-      },
-      {
-        "command": "continueQwenIndicator.restartProxy",
-        "title": "Qwen Indicator: Restart Proxy"
-      }
-    ],
     "configuration": {
-      "title": "Continue Qwen Activity Indicator",
+      "title": "Qwen Autocomplete Monitor",
       "properties": {
         "continueQwenIndicator.ollamaUrl": {
           "type": "string",
           "default": "http://127.0.0.1:11434",
-          "description": "Base URL of your Ollama server."
+          "description": "Base URL of the Ollama server behind the local proxy."
         },
         "continueQwenIndicator.proxyPort": {
           "type": "number",
           "default": 11435,
           "minimum": 1024,
           "maximum": 65535,
-          "description": "Local port used by the proxy."
+          "description": "Local port Continue should use for Ollama requests."
         },
         "continueQwenIndicator.model": {
           "type": "string",
@@ -53,22 +30,21 @@
           "description": "Exact Ollama model name to monitor."
         }
       }
-    }
+    },
+    "commands": [
+      { "command": "continueQwenIndicator.showStatus", "title": "Qwen Monitor: Show Status" },
+      { "command": "continueQwenIndicator.openLogs", "title": "Qwen Monitor: Open Request Logs" },
+      { "command": "continueQwenIndicator.restartProxy", "title": "Qwen Monitor: Restart Proxy" }
+    ]
   },
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "npm run compile && vsce package"
+    "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
-    "@vscode/vsce": "^4.1.0",
     "typescript": "^5.3.3"
-  },
-    "overrides": {
-    "@vscode/vsce": {
-        "minimatch": "^11.0.1"
-    }
   }
 }
